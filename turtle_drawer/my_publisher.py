@@ -17,7 +17,7 @@ class RDrawer(Node):
         while not self.teleport_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Várakozás a teleport_absolute szolgáltatásra...')
 
-        self.draw_R()
+        #self.draw_R()
 
     def call_teleport(self, x, y, theta):
         request = TeleportAbsolute.Request()
@@ -56,39 +56,79 @@ class RDrawer(Node):
         msg.angular.z = 0.0
         self.publisher.publish(msg)
 
-    def draw_R(self):
-        ## Koordináták: kb. 5x5-ös R betű, kezdőpont (2,2)
-        # Lépés 1: Indulási hely (nem rajzolva)
-        self.call_set_pen(0, 0, 255, 3, 1)  # ne rajzoljon
-        self.call_teleport(2.0, 2.0, 0.0)
-
-        # Lépés 2: Függőleges vonal (2,2) -> (2,7)
-        self.call_set_pen(0, 0, 255, 3, 0)
-        self.call_teleport(2.0, 7.0, 0.0)
-
-        # Felső vízszintes (2,7) -> (4.5,7)
-        self.call_teleport(4.5, 7.0, 0.0)
-
-        # Jobb oldali visszaív (4.5,7) -> (4.5,5)
-        self.call_teleport(4.5, 5.0, 0.0)
-
-        # Közép vízszintes (4.5,5) -> (2.0,5)
-        self.call_teleport(2.0, 5.0, 0.0)
-
-        # Diagonál láb – lekapcsoljuk a rajzolást, visszaugrás
+    def draw_O(self, x_start):
         self.call_set_pen(0, 0, 255, 3, 1)
-        self.call_teleport(2.0, 5.0, 0.0)
+        self.call_teleport(x_start, 2.0, 0.0)
 
-        # Diagonál vonal (2.0,5) -> (4.5,2)
         self.call_set_pen(0, 0, 255, 3, 0)
-        self.call_teleport(4.5, 2.0, 0.0)
+        self.call_teleport(x_start, 7.0, 0.0)
+        self.call_teleport(x_start + 2.5, 7.0, 0.0)
+        self.call_teleport(x_start + 2.5, 2.0, 0.0)
+        self.call_teleport(x_start, 2.0, 0.0)
 
-        self.get_logger().info('Valódi R betű kirajzolva!')
+    def draw_B(self, x_start):
+        self.call_set_pen(0, 0, 255, 3, 1)
+        self.call_teleport(x_start, 2.0, 0.0)
 
+        self.call_set_pen(0, 0, 255, 3, 0)
+        self.call_teleport(x_start, 7.0, 0.0)
+        self.call_teleport(x_start + 2.0, 7.0, 0.0)
+        self.call_teleport(x_start + 2.0, 5.0, 0.0)
+        self.call_teleport(x_start, 5.0, 0.0)
+
+        self.call_set_pen(0, 0, 255, 3, 1)
+        self.call_teleport(x_start, 5.0, 0.0)
+
+        self.call_set_pen(0, 0, 255, 3, 0)
+        self.call_teleport(x_start + 2.0, 5.0, 0.0)
+        self.call_teleport(x_start + 2.0, 2.0, 0.0)
+        self.call_teleport(x_start, 2.0, 0.0)
+
+    def draw_T(self, x_start):
+        self.call_set_pen(0, 0, 255, 3, 1)
+        self.call_teleport(x_start, 7.0, 0.0)
+
+        self.call_set_pen(0, 0, 255, 3, 0)
+        self.call_teleport(x_start + 2.5, 7.0, 0.0)
+        self.call_teleport(x_start + 1.25, 7.0, 0.0)
+        self.call_teleport(x_start + 1.25, 2.0, 0.0)
+
+    def draw_R(self, x_start):
+        self.call_set_pen(0, 0, 255, 3, 1)
+        self.call_teleport(x_start, 2.0, 0.0)
+        self.call_set_pen(0, 0, 255, 3, 0)
+        self.call_teleport(x_start, 7.0, 0.0)
+        self.call_teleport(x_start + 2.5, 7.0, 0.0)
+        self.call_teleport(x_start + 2.5, 5.0, 0.0)
+        self.call_teleport(x_start, 5.0, 0.0)
+        self.call_set_pen(0, 0, 255, 3, 1)
+        self.call_teleport(x_start, 5.0, 0.0)
+        self.call_set_pen(0, 0, 255, 3, 0)
+        self.call_teleport(x_start + 2.5, 2.0, 0.0)
+
+
+    def draw_word_ROBOT(self):
+        # R betű (start: x=2)
+        self.draw_R(2.0)
+
+        # O betű (start: x=6)
+        self.draw_O(6.0)
+
+        # B betű (start: x=10)
+        self.draw_B(10.0)
+
+        # O betű újra (start: x=14)
+        self.draw_O(14.0)
+
+        # T betű (start: x=18)
+        self.draw_T(18.0)
+
+        self.get_logger().info('ROBOT szó kirajzolva!')
 
 def main(args=None):
     rclpy.init(args=args)
     node = RDrawer()
+    node.draw_word_ROBOT()
     rclpy.spin_once(node, timeout_sec=0)  # egyszer fut le, nem loopol
     node.destroy_node()
     rclpy.shutdown()
